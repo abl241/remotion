@@ -4,8 +4,8 @@ export const HEIGHT = 700;
 
 /** Scene durations in frames @ 30fps */
 export const SCENE_FRAMES = [
-  // ~20.5s total @ 30fps (feedback: speed up + readability)
-  45, 120, 105, 105, 150, 90,
+  // ~24.0s total @ 30fps (paced for readability, tightened)
+  90, 140, 130, 95, 126, 140,
 ] as const;
 
 export const TOTAL_FRAMES = SCENE_FRAMES.reduce((a, b) => a + b, 0);
@@ -23,6 +23,13 @@ export const COLORS = {
 /** Replace with your royalty-free indie/electronic bed (e.g. Pixabay / Artlist). */
 export const AUDIO_SRC =
   "https://remotion.media/audio.mp3";
+
+export const LISTING_IMAGES = {
+  desk: "dorm-desk-QmXSjdgXxouD3qCqfCJSBx.webp",
+  minifridge: "dorm-minifridge-7VAJxQNyskD3aSH9D6bUGM.webp",
+  microwave: "dorm-microwave-C7XMuYRCHAJiRhyH8B9bj5.webp",
+  bookshelf: "dorm-bookshelf-MM4hEtXwFGx78darB6GaBS.webp",
+} as const;
 
 export const MICRO = {
   fontSize: 10,

@@ -3,23 +3,21 @@ import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
 import { COLORS } from "../constants";
 import { HeroBackdrop } from "../HeroBackdrop";
 import { SceneFrame } from "../SceneFrame";
-import { MicroLabel, Wordmark } from "../ui";
+import { LogoImage, MicroLabel } from "../ui";
 import { inter } from "../font";
 
 const beats = [
   { label: "Verified", title: ".edu students only." },
   { label: "Money", title: "No fees on sales." },
   { label: "Local", title: "Pick up on campus." },
-  { label: "Speed", title: "List in minutes." },
-  { label: "Seasonal", title: "Built for move-in / move-out." },
 ] as const;
 
 export const Scene7: React.FC = () => {
   const frame = useCurrentFrame();
-  const durationInFrames = 150;
 
-  const per = 28;
-  const hold = 14;
+  const per = 38;
+  const hold = 26;
+  const durationInFrames = beats.length * per + 12;
 
   const getAnim = (idx: number) => {
     const start = idx * per;
@@ -32,18 +30,23 @@ export const Scene7: React.FC = () => {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     });
-    const inX = interpolate(tIn, [0, 1], [140, 0], {
+    const inX = interpolate(tIn, [0, 1], [220, 0], {
       easing: Easing.out(Easing.cubic),
     });
-    const outX = interpolate(tOut, [0, 1], [0, -140], {
+    const outX = interpolate(tOut, [0, 1], [0, -220], {
       easing: Easing.in(Easing.cubic),
     });
     const x = local < hold ? inX : outX;
-    const opacity = interpolate(local, [0, 8, hold + 6, hold + 10], [0, 1, 1, 0], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
+    const scale = interpolate(tIn, [0, 1], [0.94, 1], {
+      easing: Easing.out(Easing.cubic),
     });
-    return { x, opacity };
+    const opacity = interpolate(
+      local,
+      [0, 8, hold + 6, hold + 10],
+      [0, 1, 1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    );
+    return { x, opacity, scale };
   };
 
   return (
@@ -52,7 +55,7 @@ export const Scene7: React.FC = () => {
         <HeroBackdrop intensity={0.7} />
 
         <div style={{ position: "absolute", top: 34, left: 44 }}>
-          <Wordmark size={22} />
+          <LogoImage height={28} />
         </div>
 
         <div
@@ -66,7 +69,7 @@ export const Scene7: React.FC = () => {
           }}
         >
           {beats.map((b, i) => {
-            const { x, opacity } = getAnim(i);
+            const { x, opacity, scale } = getAnim(i);
             return (
               <div
                 key={b.title}
@@ -75,17 +78,17 @@ export const Scene7: React.FC = () => {
                   width: "100%",
                   maxWidth: 900,
                   opacity,
-                  transform: `translateX(${x}px)`,
+                  transform: `translateX(${x}px) scale(${scale})`,
                 }}
               >
                 <MicroLabel>{b.label}</MicroLabel>
                 <div
                   style={{
-                    fontSize: 56,
+                    fontSize: 64,
                     fontWeight: 800,
                     letterSpacing: "-0.05em",
                     color: COLORS.text,
-                    lineHeight: 1.05,
+                    lineHeight: 1.02,
                   }}
                 >
                   {b.title}

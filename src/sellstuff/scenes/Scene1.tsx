@@ -3,24 +3,36 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { COLORS } from "../constants";
 import { HeroBackdrop } from "../HeroBackdrop";
 import { SceneFrame } from "../SceneFrame";
-import { MicroLabel, Wordmark } from "../ui";
+import { LogoImage } from "../ui";
 import { inter } from "../font";
 
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 45;
+  const durationInFrames = 90;
 
-  const enter = spring({
-    frame,
+  const logoIn = spring({ frame, fps, config: { damping: 18, stiffness: 150 } });
+
+  const q1Spring = spring({
+    frame: Math.max(0, frame - 12),
     fps,
-    config: { damping: 14, stiffness: 140 },
+    config: { damping: 11, stiffness: 120, mass: 0.9 },
   });
-  const y = interpolate(enter, [0, 1], [10, 0]);
-  const q1 = interpolate(frame, [0, 10], [0, 1], {
-    extrapolateRight: "clamp",
+  const q2Spring = spring({
+    frame: Math.max(0, frame - 38),
+    fps,
+    config: { damping: 11, stiffness: 120, mass: 0.9 },
   });
-  const q2 = interpolate(frame, [8, 18], [0, 1], {
+
+  const q1Opacity = interpolate(q1Spring, [0, 1], [0, 1]);
+  const q1Y = interpolate(q1Spring, [0, 1], [26, 0]);
+  const q1Scale = interpolate(q1Spring, [0, 1], [0.96, 1]);
+
+  const q2Opacity = interpolate(q2Spring, [0, 1], [0, 1]);
+  const q2Y = interpolate(q2Spring, [0, 1], [26, 0]);
+  const q2Scale = interpolate(q2Spring, [0, 1], [0.96, 1]);
+
+  const subIn = interpolate(frame, [66, 82], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -28,9 +40,18 @@ export const Scene1: React.FC = () => {
   return (
     <SceneFrame durationInFrames={durationInFrames}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <HeroBackdrop intensity={0.8} />
-        <div style={{ position: "absolute", top: 34, left: 44 }}>
-          <Wordmark size={22} />
+        <HeroBackdrop intensity={0.9} />
+
+        <div
+          style={{
+            position: "absolute",
+            top: 34,
+            left: 44,
+            opacity: interpolate(logoIn, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(logoIn, [0, 1], [-6, 0])}px)`,
+          }}
+        >
+          <LogoImage height={32} />
         </div>
 
         <div
@@ -38,46 +59,52 @@ export const Scene1: React.FC = () => {
             position: "absolute",
             inset: 0,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             padding: 56,
           }}
         >
-          <div style={{ transform: `translateY(${y}px)` }}>
+          <div
+            style={{
+              fontSize: 76,
+              fontWeight: 800,
+              letterSpacing: "-0.05em",
+              color: COLORS.text,
+              lineHeight: 1.02,
+              textAlign: "center",
+            }}
+          >
             <div
               style={{
-                fontSize: 56,
-                fontWeight: 750,
-                letterSpacing: "-0.04em",
-                color: COLORS.text,
-                lineHeight: 1.05,
-                textAlign: "center",
+                opacity: q1Opacity,
+                transform: `translateY(${q1Y}px) scale(${q1Scale})`,
               }}
             >
-              <div
-                style={{
-                  opacity: q1,
-                  transform: `translateX(${interpolate(q1, [0, 1], [18, 0])}px)`,
-                }}
-              >
-                Need to sell stuff?
-              </div>
-              <div
-                style={{
-                  marginTop: 12,
-                  opacity: q2,
-                  transform: `translateX(${interpolate(q2, [0, 1], [18, 0])}px)`,
-                }}
-              >
-                Want to buy stuff?
-              </div>
+              Need to sell stuff?
             </div>
-            <div style={{ marginTop: 26, textAlign: "center" }}>
-              <MicroLabel>US college students only</MicroLabel>
-              <div style={{ fontSize: 18, color: COLORS.muted }}>
-                Buy and sell locally on campus.
-              </div>
+            <div
+              style={{
+                marginTop: 14,
+                opacity: q2Opacity,
+                transform: `translateY(${q2Y}px) scale(${q2Scale})`,
+              }}
+            >
+              Want to buy stuff?
             </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 36,
+              fontSize: 22,
+              color: COLORS.muted,
+              textAlign: "center",
+              opacity: subIn,
+              transform: `translateY(${interpolate(subIn, [0, 1], [8, 0])}px)`,
+            }}
+          >
+            The campus marketplace for US college students.
           </div>
         </div>
       </AbsoluteFill>

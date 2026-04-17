@@ -1,19 +1,29 @@
 import React from "react";
+import { Img, staticFile } from "remotion";
 import { COLORS, MICRO } from "./constants";
 import { inter } from "./font";
 
-export const Wordmark: React.FC<{ size?: number }> = ({ size = 26 }) => (
-  <span
+const LOGO_SRC = "sellstuff-logo-wide-compressed_211fbe17.png";
+const LOGO_ASPECT = 847 / 200;
+
+export const LogoImage: React.FC<{ height?: number; style?: React.CSSProperties }> = ({
+  height = 40,
+  style,
+}) => (
+  <Img
+    src={staticFile(LOGO_SRC)}
     style={{
-      fontFamily: inter,
-      fontWeight: 700,
-      fontSize: size,
-      letterSpacing: "0.04em",
-      color: COLORS.text,
+      height,
+      width: height * LOGO_ASPECT,
+      objectFit: "contain",
+      display: "block",
+      ...style,
     }}
-  >
-    sellstuff
-  </span>
+  />
+);
+
+export const Wordmark: React.FC<{ size?: number }> = ({ size = 26 }) => (
+  <LogoImage height={size * 1.25} />
 );
 
 export const MicroLabel: React.FC<{ children: React.ReactNode }> = ({

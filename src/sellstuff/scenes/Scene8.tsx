@@ -1,42 +1,45 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../constants";
 import { HeroBackdrop } from "../HeroBackdrop";
 import { SceneFrame } from "../SceneFrame";
-import { PrimaryButton, SecondaryButton, Wordmark } from "../ui";
+import { LogoImage } from "../ui";
 import { inter } from "../font";
 
 export const Scene8: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const durationInFrames = 140;
 
-  const pulse = interpolate(
-    Math.sin(frame / 9),
-    [-1, 1],
-    [1, 1.02],
-  );
+  const logoSpring = spring({
+    frame,
+    fps,
+    config: { damping: 18, stiffness: 100, mass: 1 },
+  });
+  const logoOpacity = interpolate(logoSpring, [0, 1], [0, 1]);
+  const logoScale = interpolate(logoSpring, [0, 1], [0.92, 1]);
+  const logoY = interpolate(logoSpring, [0, 1], [10, 0]);
 
-  const particles = [0.12, 0.18, 0.09, 0.15, 0.11, 0.14, 0.1, 0.13];
+  const headIn = interpolate(frame, [22, 44], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const subIn = interpolate(frame, [38, 60], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const footIn = interpolate(frame, [58, 82], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const drift = Math.sin(frame / 50) * 2;
+
   return (
-    <SceneFrame durationInFrames={90}>
+    <SceneFrame durationInFrames={durationInFrames}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <HeroBackdrop intensity={0.55} />
-        {particles.map((op, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${12 + (i * 109) % 76}%`,
-              top: `${18 + (i * 73) % 64}%`,
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              background: COLORS.border,
-              opacity: op * interpolate(frame, [0, 25], [0, 1], {
-                extrapolateRight: "clamp",
-              }),
-            }}
-          />
-        ))}
+        <HeroBackdrop intensity={0.7} />
+
         <div
           style={{
             position: "absolute",
@@ -50,80 +53,72 @@ export const Scene8: React.FC = () => {
         >
           <div
             style={{
-              fontSize: 40,
+              opacity: logoOpacity,
+              transform: `translateY(${logoY + drift}px) scale(${logoScale})`,
+            }}
+          >
+            <LogoImage height={120} />
+          </div>
+
+          <div
+            style={{
+              marginTop: 28,
+              fontSize: 34,
               fontWeight: 700,
               letterSpacing: "-0.03em",
               color: COLORS.text,
               textAlign: "center",
-              marginBottom: 12,
+              opacity: headIn,
+              transform: `translateY(${interpolate(headIn, [0, 1], [8, 0])}px)`,
             }}
           >
             Start on sellstuff.
           </div>
           <div
             style={{
-              fontSize: 15,
+              marginTop: 10,
+              fontSize: 17,
               color: COLORS.muted,
-              marginBottom: 36,
               textAlign: "center",
+              opacity: subIn,
+              transform: `translateY(${interpolate(subIn, [0, 1], [6, 0])}px)`,
             }}
           >
             Sign up with your .edu email.
           </div>
+
           <div
             style={{
-              display: "flex",
-              gap: 14,
-              alignItems: "center",
-              marginBottom: 48,
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <PrimaryButton pulse={pulse}>Create account</PrimaryButton>
-            <SecondaryButton>Browse listings</SecondaryButton>
-          </div>
-          <div
-            style={{
+              marginTop: 40,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               gap: 10,
+              opacity: footIn,
+              transform: `translateY(${interpolate(footIn, [0, 1], [6, 0])}px)`,
             }}
           >
             <div
               style={{
                 fontSize: 11,
                 color: COLORS.muted,
-                letterSpacing: "0.06em",
+                letterSpacing: "0.14em",
                 textTransform: "uppercase",
+                fontWeight: 600,
               }}
             >
               US College Students Only
             </div>
-            <div style={{ fontSize: 11, color: COLORS.muted, opacity: 0.85 }}>
-              Terms · Privacy
-            </div>
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginTop: 8,
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: 14,
+                color: COLORS.muted,
+                letterSpacing: "-0.01em",
               }}
             >
-              <Wordmark size={20} />
-              <span
-                style={{
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: 13,
-                  color: COLORS.muted,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                sellstuff.xyz
-              </span>
+              sellstuff.xyz
             </div>
           </div>
         </div>

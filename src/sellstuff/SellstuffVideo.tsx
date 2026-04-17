@@ -38,22 +38,22 @@ export const SellstuffVideo: React.FC = () => {
         }}
       />
       <Series>
-        <Series.Sequence durationInFrames={45}>
+        <Series.Sequence durationInFrames={90}>
           <Scene1 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={140}>
           <Scene3 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={105}>
+        <Series.Sequence durationInFrames={130}>
           <Scene4 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={105}>
+        <Series.Sequence durationInFrames={95}>
           <Scene6 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={150}>
+        <Series.Sequence durationInFrames={126}>
           <Scene7 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={90}>
+        <Series.Sequence durationInFrames={140}>
           <Scene8 />
         </Series.Sequence>
       </Series>

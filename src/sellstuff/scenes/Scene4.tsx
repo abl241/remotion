@@ -1,6 +1,6 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS } from "../constants";
+import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { COLORS, LISTING_IMAGES } from "../constants";
 import { SceneFrame } from "../SceneFrame";
 import { MicroLabel } from "../ui";
 import { inter } from "../font";
@@ -11,16 +11,16 @@ const AI_TEXT =
 export const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 105;
+  const durationInFrames = 130;
 
   const panelIn = spring({ frame, fps, config: { damping: 14, stiffness: 130 } });
   const x = interpolate(panelIn, [0, 1], [30, 0]);
 
-  const streamStart = Math.round(0.25 * fps);
+  const streamStart = Math.round(0.45 * fps);
   const n = Math.floor(
     interpolate(
       frame,
-      [streamStart, streamStart + 75],
+      [streamStart, streamStart + 85],
       [0, AI_TEXT.length],
       { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
     ),
@@ -63,13 +63,25 @@ export const Scene4: React.FC = () => {
             >
               <div
                 style={{
-                  height: 210,
+                  height: 200,
                   borderRadius: 12,
-                  background: "linear-gradient(135deg, #e8f4fc 0%, #ecfdf5 100%)",
+                  overflow: "hidden",
                   border: `1px solid rgba(232, 232, 232, 0.7)`,
                   marginBottom: 16,
+                  background: "#f5f5f5",
                 }}
-              />
+              >
+                <Img
+                  src={staticFile(LISTING_IMAGES.minifridge)}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center 40%",
+                    display: "block",
+                  }}
+                />
+              </div>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, color: COLORS.muted, marginBottom: 6 }}>
