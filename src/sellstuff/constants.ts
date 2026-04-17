@@ -4,8 +4,8 @@ export const HEIGHT = 700;
 
 /** Scene durations in frames @ 30fps */
 export const SCENE_FRAMES = [
-  // ~24.0s total @ 30fps (paced for readability, tightened)
-  90, 140, 130, 95, 126, 140,
+  // ~23.5s total @ 30fps (paced for readability, tightened)
+  120, 95, 130, 95, 126, 140,
 ] as const;
 
 export const TOTAL_FRAMES = SCENE_FRAMES.reduce((a, b) => a + b, 0);

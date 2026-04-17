@@ -15,7 +15,7 @@ const listings = [
 export const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 140;
+  const durationInFrames = 95;
 
   const enter = spring({ frame, fps, config: { damping: 16, stiffness: 120 } });
   const windowY = interpolate(enter, [0, 1], [18, 0]);

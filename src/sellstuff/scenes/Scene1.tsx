@@ -9,7 +9,7 @@ import { inter } from "../font";
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 90;
+  const durationInFrames = 120;
 
   const logoIn = spring({ frame, fps, config: { damping: 18, stiffness: 150 } });
 
