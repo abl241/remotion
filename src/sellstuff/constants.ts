@@ -2,9 +2,10 @@ export const FPS = 30;
 export const WIDTH = 1080;
 export const HEIGHT = 700;
 
-/** Scene durations in frames @ 30fps — total ~37.3s */
+/** Scene durations in frames @ 30fps */
 export const SCENE_FRAMES = [
-  120, 150, 160, 130, 140, 120, 180, 120,
+  // ~20.5s total @ 30fps (feedback: speed up + readability)
+  45, 120, 105, 105, 150, 90,
 ] as const;
 
 export const TOTAL_FRAMES = SCENE_FRAMES.reduce((a, b) => a + b, 0);

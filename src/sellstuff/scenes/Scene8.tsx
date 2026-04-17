@@ -17,7 +17,7 @@ export const Scene8: React.FC = () => {
 
   const particles = [0.12, 0.18, 0.09, 0.15, 0.11, 0.14, 0.1, 0.13];
   return (
-    <SceneFrame durationInFrames={120}>
+    <SceneFrame durationInFrames={90}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
         <HeroBackdrop intensity={0.55} />
         {particles.map((op, i) => (

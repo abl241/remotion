@@ -4,10 +4,8 @@ import { Audio } from "@remotion/media";
 import { AUDIO_SRC, COLORS } from "./constants";
 import { inter } from "./font";
 import { Scene1 } from "./scenes/Scene1";
-import { Scene2 } from "./scenes/Scene2";
 import { Scene3 } from "./scenes/Scene3";
 import { Scene4 } from "./scenes/Scene4";
-import { Scene5 } from "./scenes/Scene5";
 import { Scene6 } from "./scenes/Scene6";
 import { Scene7 } from "./scenes/Scene7";
 import { Scene8 } from "./scenes/Scene8";
@@ -35,32 +33,27 @@ export const SellstuffVideo: React.FC = () => {
             [1, 0],
             { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
           );
-          return fadeIn * fadeOut * 0.37;
+          // Slightly lower by default (feedback: music)
+          return fadeIn * fadeOut * 0.32;
         }}
       />
       <Series>
-        <Series.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={45}>
           <Scene1 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={150}>
-          <Scene2 />
-        </Series.Sequence>
-        <Series.Sequence durationInFrames={160}>
+        <Series.Sequence durationInFrames={120}>
           <Scene3 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={130}>
+        <Series.Sequence durationInFrames={105}>
           <Scene4 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={140}>
-          <Scene5 />
-        </Series.Sequence>
-        <Series.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={105}>
           <Scene6 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={180}>
+        <Series.Sequence durationInFrames={150}>
           <Scene7 />
         </Series.Sequence>
-        <Series.Sequence durationInFrames={120}>
+        <Series.Sequence durationInFrames={90}>
           <Scene8 />
         </Series.Sequence>
       </Series>

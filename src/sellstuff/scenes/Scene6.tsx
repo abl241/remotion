@@ -1,196 +1,98 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../constants";
 import { SceneFrame } from "../SceneFrame";
 import { inter } from "../font";
 
-const Check: React.FC = () => (
-  <span style={{ color: "#16a34a", marginRight: 8, fontSize: 14 }}>✓</span>
-);
-
 export const Scene6: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 120;
+  const durationInFrames = 105;
 
-  const phase = interpolate(
-    frame,
-    [Math.round(0.55 * fps), Math.round(0.95 * fps)],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-  const statusText = phase < 0.5 ? "Pending" : "Accepted";
+  const enter = spring({ frame, fps, config: { damping: 15, stiffness: 125 } });
+  const x = interpolate(enter, [0, 1], [24, 0]);
+  const y = interpolate(enter, [0, 1], [12, 0]);
 
   return (
     <SceneFrame durationInFrames={durationInFrames}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 28,
-            padding: 48,
-            alignItems: "stretch",
-          }}
-        >
+        <div style={{ padding: 54 }}>
           <div
             style={{
-              flex: 1,
-              borderRadius: 14,
-              border: `1px solid rgba(232, 232, 232, 0.9)`,
-              background: COLORS.surface,
-              padding: 26,
+              fontSize: 10,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              color: COLORS.muted,
+              marginBottom: 12,
             }}
           >
-            <div
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                fontWeight: 600,
-                color: COLORS.muted,
-                marginBottom: 10,
-              }}
-            >
-              Activation
-            </div>
-            <div
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                color: COLORS.text,
-                marginBottom: 6,
-              }}
-            >
-              One-time activation
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: COLORS.muted,
-                marginBottom: 22,
-                lineHeight: 1.45,
-              }}
-            >
-              Unlock selling with a single $9 activation — no commission on
-              your sales.
-            </div>
-            <div
-              style={{
-                padding: 16,
-                borderRadius: 12,
-                border: `1px solid ${COLORS.border}`,
-                background: "#fafafa",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  marginBottom: 12,
-                  opacity: 0.7,
-                }}
-              >
-                {["VISA", "MC", "AMEX"].map((b) => (
-                  <span
-                    key={b}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                      padding: "4px 8px",
-                      borderRadius: 4,
-                      border: `1px solid ${COLORS.border}`,
-                      background: COLORS.surface,
-                      color: COLORS.muted,
-                    }}
-                  >
-                    {b}
-                  </span>
-                ))}
-              </div>
-              <div style={{ fontSize: 12, color: COLORS.muted }}>
-                <Check />
-                Secure checkout (Stripe)
-              </div>
-            </div>
+            Pricing
+          </div>
+          <div
+            style={{
+              fontSize: 40,
+              fontWeight: 750,
+              letterSpacing: "-0.05em",
+              color: COLORS.text,
+              lineHeight: 1.05,
+              marginBottom: 16,
+            }}
+          >
+            One activation.
+            <br />
+            Keep every dollar.
+          </div>
+          <div style={{ fontSize: 16, color: COLORS.muted, maxWidth: 620, lineHeight: 1.5 }}>
+            No commission on sales. Activate once, then sell as much as you want.
           </div>
 
           <div
             style={{
-              flex: 1,
-              borderRadius: 14,
-              border: `1px solid rgba(232, 232, 232, 0.9)`,
-              background: COLORS.surface,
-              padding: 26,
+              marginTop: 26,
+              display: "flex",
+              gap: 18,
+              alignItems: "stretch",
+              transform: `translateX(${x}px) translateY(${y}px)`,
             }}
           >
             <div
               style={{
-                fontSize: 10,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                fontWeight: 600,
-                color: COLORS.muted,
-                marginBottom: 10,
+                flex: 1,
+                borderRadius: 18,
+                border: `1px solid rgba(232, 232, 232, 0.92)`,
+                background: COLORS.surface,
+                padding: 24,
+                boxShadow: "0 26px 62px rgba(20,20,20,0.07)",
               }}
             >
-              Referrals
-            </div>
-            <div
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                color: COLORS.text,
-                marginBottom: 16,
-              }}
-            >
-              Invite friends
-            </div>
-            <div
-              style={{
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: `1px solid ${COLORS.border}`,
-                fontSize: 13,
-                marginBottom: 14,
-                color: COLORS.muted,
-              }}
-            >
-              friend@school.edu
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 18,
-              }}
-            >
-              <span style={{ fontSize: 12, color: COLORS.muted }}>Status</span>
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: COLORS.text,
-                }}
-              >
-                {statusText}
-              </span>
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: COLORS.muted,
-                lineHeight: 1.6,
-              }}
-            >
-              <div>
-                <Check />
-                3 accepted referrals
+              <div style={{ fontSize: 14, color: COLORS.muted, marginBottom: 10 }}>
+                One-time activation
               </div>
-              <div style={{ paddingLeft: 22, marginTop: 6 }}>
-                Unlocks extended access on your account — invite real classmates
-                to grow the marketplace.
+              <div style={{ fontSize: 46, fontWeight: 800, letterSpacing: "-0.05em", color: COLORS.text }}>
+                $9
+              </div>
+              <div style={{ marginTop: 10, fontSize: 14, color: COLORS.muted }}>
+                Secure checkout (Stripe)
+              </div>
+            </div>
+
+            <div
+              style={{
+                width: 340,
+                borderRadius: 18,
+                border: `1px solid rgba(232, 232, 232, 0.92)`,
+                background: "#fafafa",
+                padding: 22,
+              }}
+            >
+              <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, marginBottom: 10 }}>
+                What you don’t pay
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14, color: COLORS.muted }}>
+                <div>0% commission</div>
+                <div>No “seller fee” per listing</div>
+                <div>No cut of your payout</div>
               </div>
             </div>
           </div>

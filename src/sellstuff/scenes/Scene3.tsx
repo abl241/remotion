@@ -1,157 +1,149 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../constants";
 import { SceneFrame } from "../SceneFrame";
-import { Wordmark } from "../ui";
+import { BrowserChrome, MicroLabel, Wordmark } from "../ui";
 import { inter } from "../font";
 
 const listings = [
   { title: "IKEA desk", price: "$45", cond: "Good", hue: "#e8f4fc" },
   { title: "Mini fridge", price: "$80", cond: "Like New", hue: "#f3eefc" },
-  { title: "Calc textbook", price: "$32", cond: "Good", hue: "#ecfdf5" },
-  { title: "Desk lamp", price: "$12", cond: "Good", hue: "#fff7ed" },
-  { title: "Monitor 24\"", price: "$95", cond: "Like New", hue: "#eff6ff" },
-  { title: "Office chair", price: "$55", cond: "Good", hue: "#f5f5f5" },
-];
+  { title: "Graphing calculator", price: "$55", cond: "Good", hue: "#eff6ff" },
+  { title: "Textbook bundle", price: "$60", cond: "Good", hue: "#ecfdf5" },
+] as const;
 
 export const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
-  const durationInFrames = 160;
+  const { fps } = useVideoConfig();
+  const durationInFrames = 120;
 
-  const hoverCard = 1;
-  const pulse = interpolate(
-    Math.sin((frame - 45) / 8),
-    [-1, 1],
-    [1, 1.03],
-  );
-  const shadow = interpolate(
-    Math.sin((frame - 45) / 8),
-    [-1, 1],
-    [0.04, 0.12],
-  );
+  const enter = spring({ frame, fps, config: { damping: 16, stiffness: 120 } });
+  const windowY = interpolate(enter, [0, 1], [18, 0]);
+  const scroll = interpolate(frame, [10, durationInFrames - 10], [0, -56], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const focus = 1;
+  const pulse = interpolate(Math.sin(frame / 9), [-1, 1], [1, 1.02]);
 
   return (
     <SceneFrame durationInFrames={durationInFrames}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <div style={{ padding: "36px 48px 24px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 20,
-            }}
-          >
-            <Wordmark size={22} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 52,
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: 900 }}>
+            <MicroLabel>Browse</MicroLabel>
             <div
               style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                justifyContent: "flex-end",
+                fontSize: 34,
+                fontWeight: 700,
+                letterSpacing: "-0.04em",
+                color: COLORS.text,
+                marginBottom: 18,
               }}
             >
-              {["Furniture", "Electronics", "Textbooks", "All"].map((c) => (
-                <span
-                  key={c}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    border: `1px solid rgba(232, 232, 232, 0.9)`,
-                    background: c === "All" ? COLORS.text : COLORS.surface,
-                    color: c === "All" ? COLORS.surface : COLORS.muted,
-                  }}
-                >
-                  {c}
-                </span>
-              ))}
+              See what’s for sale near you.
             </div>
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: COLORS.muted,
-              marginBottom: 16,
-            }}
-          >
-            Near: State University — main campus
-          </div>
-        </div>
 
-        <div
-          style={{
-            padding: "0 48px 40px",
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 16,
-          }}
-        >
-          {listings.map((item, i) => {
-            const isHover = i === hoverCard;
-            const scale = isHover ? pulse : 1;
-            return (
-              <div
-                key={item.title}
-                style={{
-                  borderRadius: 12,
-                  border: `1px solid rgba(232, 232, 232, 0.85)`,
-                  background: COLORS.surface,
-                  overflow: "hidden",
-                  transform: `scale(${scale})`,
-                  boxShadow: isHover
-                    ? `0 14px 36px rgba(20,20,20,${shadow})`
-                    : "0 2px 8px rgba(20,20,20,0.04)",
-                }}
-              >
+            <div
+              style={{
+                borderRadius: 16,
+                border: `1px solid rgba(232, 232, 232, 0.9)`,
+                background: COLORS.surface,
+                boxShadow: "0 30px 70px rgba(20,20,20,0.07)",
+                overflow: "hidden",
+                transform: `translateY(${windowY}px)`,
+              }}
+            >
+              <BrowserChrome />
+              <div style={{ padding: 18 }}>
                 <div
                   style={{
-                    aspectRatio: "1",
-                    background: item.hue,
-                    borderBottom: `1px solid rgba(232, 232, 232, 0.7)`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "2px 4px 14px",
                   }}
-                />
-                <div style={{ padding: "12px 14px 14px" }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: COLORS.text,
-                      marginBottom: 6,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {item.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: COLORS.muted,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span style={{ fontWeight: 600, color: COLORS.text }}>
-                      {item.price}
-                    </span>
-                    <span>{item.cond}</span>
+                >
+                  <Wordmark size={20} />
+                  <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted }}>
+                    State University · main campus
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
 
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: 13,
-            color: COLORS.muted,
-            paddingBottom: 28,
-          }}
-        >
-          Browse what students are selling near you.
+                <div
+                  style={{
+                    transform: `translateY(${scroll}px)`,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: 14,
+                  }}
+                >
+                  {listings.map((item, i) => {
+                    const isFocus = i === focus;
+                    return (
+                      <div
+                        key={item.title}
+                        style={{
+                          borderRadius: 14,
+                          border: `1px solid rgba(232, 232, 232, 0.85)`,
+                          background: COLORS.surface,
+                          overflow: "hidden",
+                          transform: isFocus ? `scale(${pulse})` : "scale(1)",
+                          boxShadow: isFocus
+                            ? "0 18px 46px rgba(20,20,20,0.10)"
+                            : "0 4px 14px rgba(20,20,20,0.05)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: 154,
+                            background: item.hue,
+                            borderBottom: `1px solid rgba(232, 232, 232, 0.75)`,
+                          }}
+                        />
+                        <div style={{ padding: "14px 16px 16px" }}>
+                          <div
+                            style={{
+                              fontSize: 18,
+                              fontWeight: 700,
+                              color: COLORS.text,
+                              marginBottom: 8,
+                              letterSpacing: "-0.02em",
+                            }}
+                          >
+                            {item.title}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 14,
+                              color: COLORS.muted,
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "baseline",
+                            }}
+                          >
+                            <span style={{ fontWeight: 700, color: COLORS.text }}>
+                              {item.price}
+                            </span>
+                            <span>{item.cond}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </AbsoluteFill>
     </SceneFrame>
