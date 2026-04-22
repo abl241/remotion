@@ -152,3 +152,34 @@ export const BrowserChrome: React.FC<{ url?: string }> = ({
 
 export const hairlineBorder = (opacity = 0.5) =>
   `1px solid rgba(232, 232, 232, ${opacity})`;
+
+export const Cursor: React.FC<{
+  x: number;
+  y: number;
+  scale?: number;
+  opacity?: number;
+}> = ({ x, y, scale = 1, opacity = 1 }) => (
+  <svg
+    width="26"
+    height="26"
+    viewBox="0 0 24 24"
+    style={{
+      position: "absolute",
+      left: x,
+      top: y,
+      transform: `scale(${scale})`,
+      transformOrigin: "0 0",
+      opacity,
+      pointerEvents: "none",
+      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.18))",
+    }}
+  >
+    <path
+      d="M4 2l16 7-7 2-2 7-7-16z"
+      fill="#141414"
+      stroke="#ffffff"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

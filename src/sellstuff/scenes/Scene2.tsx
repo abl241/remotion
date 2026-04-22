@@ -1,202 +1,175 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { COLORS } from "../constants";
 import { SceneFrame } from "../SceneFrame";
 import { MicroLabel } from "../ui";
 import { inter } from "../font";
 
+const durationInFrames = 150;
+
+type Msg = { text: string; side: "l" | "r"; tag: string };
+
+const messages: Msg[] = [
+  { text: "yo u still got the fridge??", side: "l", tag: "stranger_412" },
+  { text: "can u ship it to LA 👀", side: "r", tag: "unknown number" },
+  { text: "trade for crypto?", side: "l", tag: "not_a_scam_bot" },
+];
+
+const Bubble: React.FC<{
+  msg: Msg;
+  startFrame: number;
+  frame: number;
+  fps: number;
+}> = ({ msg, startFrame, frame, fps }) => {
+  const local = frame - startFrame;
+  const s = spring({
+    frame: Math.max(0, local),
+    fps,
+    config: { damping: 11, stiffness: 140, mass: 0.9 },
+  });
+  const opacity = interpolate(s, [0, 1], [0, 1]);
+  const y = interpolate(s, [0, 1], [24, 0]);
+  const scale = interpolate(s, [0, 1], [0.9, 1], {
+    easing: Easing.out(Easing.cubic),
+  });
+
+  // Jitter after landing
+  const jitter = local > 6 ? Math.sin((frame + startFrame) / 4) * 1.2 : 0;
+
+  const isRight = msg.side === "r";
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: isRight ? "flex-end" : "flex-start",
+        marginBottom: 18,
+        opacity,
+        transform: `translateY(${y + jitter}px) scale(${scale})`,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: COLORS.muted,
+          letterSpacing: "0.02em",
+          marginBottom: 6,
+          paddingLeft: isRight ? 0 : 4,
+          paddingRight: isRight ? 4 : 0,
+        }}
+      >
+        {msg.tag}
+      </div>
+      <div
+        style={{
+          fontSize: 32,
+          fontWeight: 600,
+          letterSpacing: "-0.02em",
+          color: isRight ? "#fff" : COLORS.text,
+          background: isRight ? "#141414" : "#efefef",
+          padding: "16px 22px",
+          borderRadius: 22,
+          borderTopRightRadius: isRight ? 6 : 22,
+          borderTopLeftRadius: isRight ? 22 : 6,
+          maxWidth: 620,
+          boxShadow: "0 10px 30px rgba(20,20,20,0.08)",
+        }}
+      >
+        {msg.text}
+      </div>
+    </div>
+  );
+};
+
 export const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 150;
 
-  const stagger = (offset: number) =>
-    spring({
-      frame: Math.max(0, frame - offset),
-      fps,
-      config: { damping: 14, stiffness: 140 },
-    });
+  const label = spring({ frame, fps, config: { damping: 18, stiffness: 170 } });
+  const labelOpacity = interpolate(label, [0, 1], [0, 1]);
+  const labelY = interpolate(label, [0, 1], [-6, 0]);
 
-  const a = stagger(0);
-  const tTrusted = stagger(Math.round(0.12 * fps));
-  const b = stagger(Math.round(0.22 * fps));
-  const c = stagger(Math.round(0.4 * fps));
-  const d0 = stagger(Math.round(0.54 * fps));
-  const d1 = stagger(Math.round(0.64 * fps));
-  const d2 = stagger(Math.round(0.74 * fps));
-
-  const fs = (t: number) => ({
-    opacity: interpolate(t, [0, 1], [0, 1]),
-    transform: `scale(${interpolate(t, [0, 1], [0.94, 1])})`,
+  // Final "not anymore." slam
+  const slamStart = 118;
+  const slam = spring({
+    frame: Math.max(0, frame - slamStart),
+    fps,
+    config: { damping: 8, stiffness: 180, mass: 1.1 },
   });
+  const slamOpacity = interpolate(slam, [0, 1], [0, 1]);
+  const slamScale = interpolate(slam, [0, 1], [1.3, 1], {
+    easing: Easing.out(Easing.cubic),
+  });
+
+  // Fade out the chats as slam comes in
+  const chatsOpacity = interpolate(frame, [slamStart, slamStart + 14], [1, 0.12], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const drift = Math.sin(frame / 40) * 3;
 
   return (
     <SceneFrame durationInFrames={durationInFrames}>
-      <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <div
+      <AbsoluteFill
+        style={{ backgroundColor: COLORS.bg, fontFamily: inter, overflow: "hidden" }}
+      >
+        <AbsoluteFill
           style={{
-            position: "absolute",
-            inset: 0,
+            padding: "46px 72px",
             display: "flex",
-            alignItems: "center",
+            flexDirection: "column",
             justifyContent: "center",
-            padding: 56,
-            gap: 36,
+            opacity: chatsOpacity,
+            transform: `translateY(${drift}px)`,
           }}
         >
           <div
             style={{
-              flex: 1,
-              maxWidth: 420,
-              borderRadius: 14,
-              border: `1px solid rgba(232, 232, 232, 0.85)`,
-              background: COLORS.surface,
-              padding: 28,
-              ...fs(a),
+              opacity: labelOpacity,
+              transform: `translateY(${labelY}px)`,
+              marginBottom: 18,
             }}
           >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                marginBottom: 16,
-                color: COLORS.text,
-              }}
-            >
-              Create account
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: COLORS.muted,
-                marginBottom: 8,
-              }}
-            >
-              School email
-            </div>
-            <div
-              style={{
-                padding: "12px 14px",
-                borderRadius: 10,
-                border: `1px solid ${COLORS.border}`,
-                fontSize: 14,
-                color: COLORS.text,
-              }}
-            >
-              alex.university.edu
-            </div>
+            <MicroLabel>The current reality</MicroLabel>
           </div>
 
-          <div
+          {messages.map((m, i) => (
+            <Bubble key={i} msg={m} startFrame={8 + i * 26} frame={frame} fps={fps} />
+          ))}
+        </AbsoluteFill>
+
+        {frame >= slamStart - 4 && (
+          <AbsoluteFill
             style={{
-              flex: 1,
-              maxWidth: 420,
-              borderRadius: 14,
-              border: `1px solid rgba(232, 232, 232, 0.85)`,
-              background: COLORS.surface,
-              padding: 32,
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              textAlign: "center",
-              ...fs(b),
+              justifyContent: "center",
             }}
           >
             <div
               style={{
-                alignSelf: "stretch",
-                textAlign: "center",
-                marginBottom: 14,
-                opacity: interpolate(tTrusted, [0, 1], [0, 1]),
-                transform: `scale(${interpolate(tTrusted, [0, 1], [0.94, 1])})`,
-              }}
-            >
-              <MicroLabel>Trusted</MicroLabel>
-            </div>
-            <div
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                border: `1px solid rgba(232, 232, 232, 0.9)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 20,
-                background: "#fafafa",
-              }}
-            >
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 3l7 4v5c0 5-3.5 9-7 10-3.5-1-7-5-7-10V7l7-4z"
-                  stroke={COLORS.text}
-                  strokeWidth="1.5"
-                  fill="none"
-                />
-                <path
-                  d="M9 12l2 2 4-4"
-                  stroke={COLORS.text}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 600,
+                fontSize: 132,
+                fontWeight: 900,
+                letterSpacing: "-0.06em",
                 color: COLORS.text,
-                marginBottom: 18,
-                lineHeight: 1.25,
-                opacity: interpolate(c, [0, 1], [0, 1]),
-                transform: `scale(${interpolate(c, [0, 1], [0.96, 1])})`,
+                opacity: slamOpacity,
+                transform: `scale(${slamScale})`,
+                textAlign: "center",
+                lineHeight: 0.95,
               }}
             >
-              Real students. Real campus deals.
+              Not anymore.
             </div>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                textAlign: "left",
-                width: "100%",
-                fontSize: 13,
-                color: COLORS.muted,
-                lineHeight: 2,
-              }}
-            >
-              {[
-                { line: ".edu verification", t: d0 },
-                { line: "peer-to-peer", t: d1 },
-                { line: "no corporate middleman", t: d2 },
-              ].map(({ line, t }) => (
-                <li
-                  key={line}
-                  style={{
-                    paddingLeft: 18,
-                    position: "relative",
-                    opacity: interpolate(t, [0, 1], [0, 1]),
-                    transform: `translateY(${interpolate(t, [0, 1], [8, 0])}px)`,
-                  }}
-                >
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      top: "0.55em",
-                      width: 5,
-                      height: 5,
-                      borderRadius: "50%",
-                      background: COLORS.border,
-                    }}
-                  />
-                  {line}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+          </AbsoluteFill>
+        )}
       </AbsoluteFill>
     </SceneFrame>
   );

@@ -1,143 +1,123 @@
 import React from "react";
-import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS, LISTING_IMAGES } from "../constants";
+import {
+  AbsoluteFill,
+  Easing,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { COLORS } from "../constants";
+import { HeroBackdrop } from "../HeroBackdrop";
 import { SceneFrame } from "../SceneFrame";
-import { BrowserChrome, MicroLabel } from "../ui";
+import { LogoImage } from "../ui";
 import { inter } from "../font";
 
-const listings = [
-  { title: "Dorm desk", price: "$45", cond: "Good", src: LISTING_IMAGES.desk },
-  { title: "Mini fridge", price: "$80", cond: "Like New", src: LISTING_IMAGES.minifridge },
-  { title: "Microwave", price: "$25", cond: "Good", src: LISTING_IMAGES.microwave },
-  { title: "Bookshelf", price: "$35", cond: "Good", src: LISTING_IMAGES.bookshelf },
-] as const;
+const durationInFrames = 150;
 
 export const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 95;
 
-  const enter = spring({ frame, fps, config: { damping: 16, stiffness: 120 } });
-  const windowY = interpolate(enter, [0, 1], [18, 0]);
-  const focus = 1;
-  const pulse = interpolate(Math.sin(frame / 10), [-1, 1], [1, 1.02]);
+  const logoSpring = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 130, mass: 0.9 },
+  });
+  const logoOpacity = interpolate(logoSpring, [0, 1], [0, 1]);
+  const logoScale = interpolate(logoSpring, [0, 1], [0.82, 1], {
+    easing: Easing.out(Easing.cubic),
+  });
+  const logoY = interpolate(logoSpring, [0, 1], [14, 0]);
+
+  // Statement slides in after logo settles
+  const stmtStart = 30;
+  const stmtSpring = spring({
+    frame: Math.max(0, frame - stmtStart),
+    fps,
+    config: { damping: 16, stiffness: 130 },
+  });
+  const stmtOpacity = interpolate(stmtSpring, [0, 1], [0, 1]);
+  const stmtY = interpolate(stmtSpring, [0, 1], [14, 0]);
+
+  // Highlight sweep on key phrase
+  const hi = interpolate(frame, [70, 110], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const drift = Math.sin(frame / 55) * 2;
 
   return (
     <SceneFrame durationInFrames={durationInFrames}>
       <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <div
+        <HeroBackdrop intensity={0.95} />
+
+        <AbsoluteFill
           style={{
-            position: "absolute",
-            inset: 0,
-            padding: "28px 56px 32px",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
-            gap: 14,
+            padding: 56,
+            gap: 28,
           }}
         >
-          <div>
-            <MicroLabel>Browse</MicroLabel>
-            <div
-              style={{
-                fontSize: 36,
-                fontWeight: 700,
-                letterSpacing: "-0.04em",
-                color: COLORS.text,
-                lineHeight: 1.1,
-              }}
-            >
-              See what&rsquo;s for sale near you.
-            </div>
+          <div
+            style={{
+              opacity: logoOpacity,
+              transform: `translateY(${logoY + drift}px) scale(${logoScale})`,
+            }}
+          >
+            <LogoImage height={110} />
           </div>
 
           <div
             style={{
-              borderRadius: 14,
-              border: `1px solid rgba(232, 232, 232, 0.9)`,
-              background: COLORS.surface,
-              boxShadow: "0 24px 60px rgba(20,20,20,0.07)",
-              overflow: "hidden",
-              transform: `translateY(${windowY}px)`,
+              maxWidth: 920,
+              textAlign: "center",
+              opacity: stmtOpacity,
+              transform: `translateY(${stmtY}px)`,
             }}
           >
-            <BrowserChrome />
             <div
               style={{
-                padding: 16,
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 14,
+                fontSize: 48,
+                fontWeight: 800,
+                letterSpacing: "-0.04em",
+                color: COLORS.text,
+                lineHeight: 1.08,
               }}
             >
-              {listings.map((item, i) => {
-                const isFocus = i === focus;
-                return (
-                  <div
-                    key={item.title}
-                    style={{
-                      borderRadius: 12,
-                      border: `1px solid rgba(232, 232, 232, 0.85)`,
-                      background: COLORS.surface,
-                      overflow: "hidden",
-                      transform: isFocus ? `scale(${pulse})` : "scale(1)",
-                      boxShadow: isFocus
-                        ? "0 18px 40px rgba(20,20,20,0.10)"
-                        : "0 2px 10px rgba(20,20,20,0.04)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        aspectRatio: "4 / 3",
-                        background: "#f5f5f5",
-                        borderBottom: `1px solid rgba(232, 232, 232, 0.75)`,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <Img
-                        src={staticFile(item.src)}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                    </div>
-                    <div style={{ padding: "12px 14px 14px" }}>
-                      <div
-                        style={{
-                          fontSize: 16,
-                          fontWeight: 700,
-                          color: COLORS.text,
-                          marginBottom: 6,
-                          letterSpacing: "-0.02em",
-                          lineHeight: 1.25,
-                        }}
-                      >
-                        {item.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: COLORS.muted,
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "baseline",
-                        }}
-                      >
-                        <span style={{ fontWeight: 700, color: COLORS.text }}>
-                          {item.price}
-                        </span>
-                        <span>{item.cond}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              The campus marketplace that{" "}
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  padding: "0 6px",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 4,
+                    height: 16,
+                    background: "#ffe879",
+                    borderRadius: 4,
+                    transform: `scaleX(${hi})`,
+                    transformOrigin: "0 50%",
+                    zIndex: 0,
+                  }}
+                />
+                <span style={{ position: "relative", zIndex: 1 }}>
+                  sells it in minutes.
+                </span>
+              </span>
             </div>
           </div>
-        </div>
+        </AbsoluteFill>
       </AbsoluteFill>
     </SceneFrame>
   );

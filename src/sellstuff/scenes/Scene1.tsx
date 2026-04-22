@@ -1,65 +1,103 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS } from "../constants";
-import { HeroBackdrop } from "../HeroBackdrop";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { COLORS, LISTING_IMAGES } from "../constants";
 import { SceneFrame } from "../SceneFrame";
-import { LogoImage } from "../ui";
 import { inter } from "../font";
+
+const durationInFrames = 150;
+const CUT = 68;
 
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const durationInFrames = 120;
 
-  const logoIn = spring({ frame, fps, config: { damping: 18, stiffness: 150 } });
+  const cutIndex = frame < CUT ? 0 : 1;
+  const local = cutIndex === 0 ? frame : frame - CUT;
 
-  const q1Spring = spring({
-    frame: Math.max(0, frame - 12),
-    fps,
-    config: { damping: 11, stiffness: 120, mass: 0.9 },
-  });
-  const q2Spring = spring({
-    frame: Math.max(0, frame - 38),
-    fps,
-    config: { damping: 11, stiffness: 120, mass: 0.9 },
-  });
+  const bg = cutIndex === 0 ? LISTING_IMAGES.bookshelf : LISTING_IMAGES.desk;
 
-  const q1Opacity = interpolate(q1Spring, [0, 1], [0, 1]);
-  const q1Y = interpolate(q1Spring, [0, 1], [26, 0]);
-  const q1Scale = interpolate(q1Spring, [0, 1], [0.96, 1]);
-
-  const q2Opacity = interpolate(q2Spring, [0, 1], [0, 1]);
-  const q2Y = interpolate(q2Spring, [0, 1], [26, 0]);
-  const q2Scale = interpolate(q2Spring, [0, 1], [0.96, 1]);
-
-  const subIn = interpolate(frame, [66, 82], [0, 1], {
-    extrapolateLeft: "clamp",
+  // Punch-in zoom per cut
+  const zoom = interpolate(local, [0, 75], [1.12, 1.22], {
     extrapolateRight: "clamp",
   });
 
+  // Handheld shake (tiny, frequent)
+  const shakeX = Math.sin(frame / 2.3) * 1.8 + Math.sin(frame / 5) * 1.1;
+  const shakeY = Math.cos(frame / 2.7) * 1.6 + Math.sin(frame / 4) * 0.8;
+
+  // Flash on cut change
+  const flash =
+    cutIndex === 1 && local < 10 ? interpolate(local, [0, 10], [1, 0]) : 0;
+
+  // Text spring per cut
+  const tSpring = spring({
+    frame: local,
+    fps,
+    config: { damping: 10, stiffness: 160, mass: 0.8 },
+  });
+  const tOpacity = interpolate(tSpring, [0, 1], [0, 1]);
+  const tScale = interpolate(tSpring, [0, 1], [0.92, 1], {
+    easing: Easing.out(Easing.cubic),
+  });
+  const tY = interpolate(tSpring, [0, 1], [18, 0]);
+
+  const textByCut = [
+    { line1: "Got stuff you", line2: "can't sell?" },
+    { line1: "Selling online", line2: "shouldn't be sketchy." },
+  ];
+  const t = textByCut[cutIndex];
+
   return (
     <SceneFrame durationInFrames={durationInFrames}>
-      <AbsoluteFill style={{ backgroundColor: COLORS.bg, fontFamily: inter }}>
-        <HeroBackdrop intensity={0.9} />
-
-        <div
+      <AbsoluteFill
+        style={{
+          backgroundColor: COLORS.bg,
+          fontFamily: inter,
+          overflow: "hidden",
+        }}
+      >
+        <AbsoluteFill
           style={{
-            position: "absolute",
-            top: 34,
-            left: 44,
-            opacity: interpolate(logoIn, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(logoIn, [0, 1], [-6, 0])}px)`,
+            transform: `scale(${zoom}) translate(${shakeX}px, ${shakeY}px)`,
+            opacity: 0.42,
           }}
         >
-          <LogoImage height={32} />
-        </div>
+          <Img
+            src={staticFile(bg)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "saturate(0.8) contrast(1.02)",
+            }}
+          />
+        </AbsoluteFill>
 
-        <div
+        <AbsoluteFill
           style={{
-            position: "absolute",
-            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(250,250,250,0.55) 0%, rgba(250,250,250,0.85) 100%)",
+          }}
+        />
+
+        {flash > 0 && (
+          <AbsoluteFill
+            style={{ background: "#ffffff", opacity: flash * 0.85 }}
+          />
+        )}
+
+        <AbsoluteFill
+          style={{
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             padding: 56,
@@ -67,46 +105,20 @@ export const Scene1: React.FC = () => {
         >
           <div
             style={{
-              fontSize: 76,
-              fontWeight: 800,
-              letterSpacing: "-0.05em",
+              textAlign: "center",
+              fontWeight: 900,
+              letterSpacing: "-0.055em",
               color: COLORS.text,
-              lineHeight: 1.02,
-              textAlign: "center",
+              lineHeight: 0.98,
+              fontSize: 108,
+              opacity: tOpacity,
+              transform: `translateY(${tY}px) scale(${tScale})`,
             }}
           >
-            <div
-              style={{
-                opacity: q1Opacity,
-                transform: `translateY(${q1Y}px) scale(${q1Scale})`,
-              }}
-            >
-              Need to sell stuff?
-            </div>
-            <div
-              style={{
-                marginTop: 14,
-                opacity: q2Opacity,
-                transform: `translateY(${q2Y}px) scale(${q2Scale})`,
-              }}
-            >
-              Want to buy stuff?
-            </div>
+            <div>{t.line1}</div>
+            <div>{t.line2}</div>
           </div>
-
-          <div
-            style={{
-              marginTop: 36,
-              fontSize: 22,
-              color: COLORS.muted,
-              textAlign: "center",
-              opacity: subIn,
-              transform: `translateY(${interpolate(subIn, [0, 1], [8, 0])}px)`,
-            }}
-          >
-            The campus marketplace for US college students.
-          </div>
-        </div>
+        </AbsoluteFill>
       </AbsoluteFill>
     </SceneFrame>
   );

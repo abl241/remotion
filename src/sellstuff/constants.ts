@@ -4,8 +4,9 @@ export const HEIGHT = 700;
 
 /** Scene durations in frames @ 30fps */
 export const SCENE_FRAMES = [
-  // ~23.5s total @ 30fps (paced for readability, tightened)
-  120, 95, 130, 95, 126, 140,
+  // ~65s total @ 30fps — marketing funnel pacing
+  // 1:hook 2:problem 3:solution 4:how 5:payoff 6:proof 7:objections 8:cta
+  150, 150, 150, 300, 300, 300, 300, 300,
 ] as const;
 
 export const TOTAL_FRAMES = SCENE_FRAMES.reduce((a, b) => a + b, 0);
