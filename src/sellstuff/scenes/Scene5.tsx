@@ -12,13 +12,12 @@ import { SceneFrame } from "../SceneFrame";
 import { MicroLabel } from "../ui";
 import { inter } from "../font";
 
-const durationInFrames = 300;
+const durationInFrames = 200;
 
-// Three beats, each ~100f
+// Two beats, 100f each (Beat 3 ".edu only" removed — Scene 7 covers it)
 const BEATS = [
   { start: 0, end: 100, title: "Sell faster." },
   { start: 100, end: 200, title: "Keep every dollar." },
-  { start: 200, end: 300, title: "Zero sketchy strangers." },
 ] as const;
 
 const BeatTitle: React.FC<{ idx: number; frame: number; fps: number }> = ({
@@ -68,15 +67,15 @@ const BeatTitle: React.FC<{ idx: number; frame: number; fps: number }> = ({
   );
 };
 
-// Beat 1 — Notifications cascade
-const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
+// Beat 1 — Sold notifications stacking centered below title
+const Beat1: React.FC<{ frame: number }> = ({ frame }) => {
   const start = BEATS[0].start;
   const local = frame - start;
 
   const toasts = [
-    { at: 22, label: "SOLD", item: "Dorm desk", price: "$45" },
-    { at: 42, label: "SOLD", item: "Microwave", price: "$25" },
-    { at: 62, label: "SOLD", item: "Mini fridge", price: "$80" },
+    { at: 14, label: "SOLD", item: "Dorm desk", price: "$45" },
+    { at: 32, label: "SOLD", item: "Microwave", price: "$25" },
+    { at: 50, label: "SOLD", item: "Mini fridge", price: "$80" },
   ];
 
   const outT = interpolate(local, [BEATS[0].end - BEATS[0].start - 18, BEATS[0].end - BEATS[0].start], [0, 1], {
@@ -88,22 +87,23 @@ const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
     <div
       style={{
         position: "absolute",
-        right: 56,
-        top: 300,
+        left: 0,
+        right: 0,
+        top: 290,
         display: "flex",
         flexDirection: "column",
-        gap: 14,
-        alignItems: "flex-end",
+        gap: 16,
+        alignItems: "center",
         opacity: 1 - outT,
-        transform: `translateX(${outT * 40}px)`,
+        transform: `translateY(${outT * -14}px)`,
       }}
     >
       {toasts.map((t, i) => {
-        const s = interpolate(local, [t.at, t.at + 14], [0, 1], {
+        const s = interpolate(local, [t.at, t.at + 16], [0, 1], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         });
-        const drift = Math.sin((frame + i * 12) / 22) * 2;
+        const drift = Math.sin((frame + i * 12) / 24) * 2;
         return (
           <div
             key={i}
@@ -111,30 +111,30 @@ const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
               background: COLORS.surface,
               border: `1px solid ${COLORS.border}`,
               borderRadius: 14,
-              padding: "14px 18px",
-              boxShadow: "0 18px 48px rgba(20,20,20,0.10)",
+              padding: "16px 22px",
+              boxShadow: "0 22px 56px rgba(20,20,20,0.10)",
               display: "flex",
               alignItems: "center",
-              gap: 14,
+              gap: 16,
               opacity: s,
-              transform: `translateX(${interpolate(s, [0, 1], [60, 0])}px) translateY(${drift}px) scale(${interpolate(
+              transform: `translateY(${interpolate(s, [0, 1], [24, 0]) + drift}px) scale(${interpolate(
                 s,
                 [0, 1],
-                [0.9, 1],
+                [0.92, 1],
                 { easing: Easing.out(Easing.cubic) },
               )})`,
-              minWidth: 320,
+              width: 520,
             }}
           >
             <div
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 800,
-                letterSpacing: "0.12em",
+                letterSpacing: "0.14em",
                 color: "#065f46",
                 background: "#ecfdf5",
                 border: "1px solid #a7f3d0",
-                padding: "4px 8px",
+                padding: "5px 10px",
                 borderRadius: 6,
               }}
             >
@@ -143,7 +143,7 @@ const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
             <div style={{ flex: 1 }}>
               <div
                 style={{
-                  fontSize: 15,
+                  fontSize: 18,
                   fontWeight: 700,
                   color: COLORS.text,
                   letterSpacing: "-0.01em",
@@ -151,13 +151,13 @@ const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
               >
                 {t.item}
               </div>
-              <div style={{ fontSize: 11, color: COLORS.muted }}>
+              <div style={{ fontSize: 13, color: COLORS.muted, marginTop: 2 }}>
                 Picked up · 2 hours ago
               </div>
             </div>
             <div
               style={{
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: 800,
                 color: COLORS.text,
                 letterSpacing: "-0.02em",
@@ -172,18 +172,13 @@ const Beat1: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
   );
 };
 
-// Beat 2 — $ counter
+// Beat 2 — $ counter that keeps climbing (never plateaus)
 const Beat2: React.FC<{ frame: number }> = ({ frame }) => {
   const start = BEATS[1].start;
   const local = frame - start;
 
-  const counter = Math.floor(
-    interpolate(local, [12, 70], [0, 245], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
-    }),
-  );
+  // Linear climb: starts ticking at local=4, ~10/frame. No right clamp → keeps rising.
+  const counter = Math.max(0, Math.floor((local - 4) * 10));
 
   const outT = interpolate(local, [BEATS[1].end - BEATS[1].start - 18, BEATS[1].end - BEATS[1].start], [0, 1], {
     extrapolateLeft: "clamp",
@@ -216,7 +211,7 @@ const Beat2: React.FC<{ frame: number }> = ({ frame }) => {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        ${counter}
+        ${counter.toLocaleString()}
       </div>
       <div
         style={{
@@ -234,98 +229,6 @@ const Beat2: React.FC<{ frame: number }> = ({ frame }) => {
           <span style={{ color: COLORS.text, fontWeight: 700 }}>0</span> listing fees
         </span>
       </div>
-    </div>
-  );
-};
-
-// Beat 3 — .edu verification row
-const Beat3: React.FC<{ frame: number }> = ({ frame }) => {
-  const start = BEATS[2].start;
-  const local = frame - start;
-
-  const badges = [
-    { name: "alex", domain: "stanford.edu" },
-    { name: "priya", domain: "cu.edu" },
-    { name: "jamie", domain: "mit.edu" },
-    { name: "sam", domain: "gatech.edu" },
-  ];
-
-  const outT = interpolate(local, [BEATS[2].end - BEATS[2].start - 18, BEATS[2].end - BEATS[2].start], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        top: 290,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        gap: 16,
-        flexWrap: "wrap",
-        padding: "0 60px",
-        opacity: 1 - outT,
-      }}
-    >
-      {badges.map((b, i) => {
-        const s = interpolate(local, [18 + i * 10, 32 + i * 10], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        });
-        return (
-          <div
-            key={b.domain}
-            style={{
-              background: COLORS.surface,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 14,
-              padding: "14px 18px",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              boxShadow: "0 14px 40px rgba(20,20,20,0.08)",
-              opacity: s,
-              transform: `translateY(${interpolate(s, [0, 1], [16, 0])}px) scale(${interpolate(
-                s,
-                [0, 1],
-                [0.92, 1],
-                { easing: Easing.out(Easing.cubic) },
-              )})`,
-            }}
-          >
-            <span
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: 999,
-                background: "#dbeafe",
-                color: "#1d4ed8",
-                fontWeight: 800,
-                fontSize: 13,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              ✓
-            </span>
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 700,
-                color: COLORS.text,
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {b.name}@{b.domain}
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 };
@@ -359,9 +262,8 @@ export const Scene5: React.FC = () => {
           <BeatTitle key={i} idx={i} frame={frame} fps={fps} />
         ))}
 
-        {activeIdx === 0 && <Beat1 frame={frame} fps={fps} />}
+        {activeIdx === 0 && <Beat1 frame={frame} />}
         {activeIdx === 1 && <Beat2 frame={frame} />}
-        {activeIdx === 2 && <Beat3 frame={frame} />}
       </AbsoluteFill>
     </SceneFrame>
   );

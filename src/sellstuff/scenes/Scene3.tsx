@@ -13,7 +13,7 @@ import { SceneFrame } from "../SceneFrame";
 import { LogoImage } from "../ui";
 import { inter } from "../font";
 
-const durationInFrames = 150;
+const durationInFrames = 85;
 
 export const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
@@ -41,7 +41,7 @@ export const Scene3: React.FC = () => {
   const stmtY = interpolate(stmtSpring, [0, 1], [14, 0]);
 
   // Highlight sweep on key phrase
-  const hi = interpolate(frame, [70, 110], [0, 1], {
+  const hi = interpolate(frame, [44, 68], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -89,7 +89,7 @@ export const Scene3: React.FC = () => {
                 lineHeight: 1.08,
               }}
             >
-              The campus marketplace that{" "}
+              The campus marketplace with{" "}
               <span
                 style={{
                   position: "relative",
@@ -112,7 +112,7 @@ export const Scene3: React.FC = () => {
                   }}
                 />
                 <span style={{ position: "relative", zIndex: 1 }}>
-                  sells it in minutes.
+                  zero commission.
                 </span>
               </span>
             </div>

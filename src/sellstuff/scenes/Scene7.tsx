@@ -12,7 +12,7 @@ import { SceneFrame } from "../SceneFrame";
 import { MicroLabel } from "../ui";
 import { inter } from "../font";
 
-const durationInFrames = 300;
+const durationInFrames = 210;
 
 const rows = [
   {
@@ -29,8 +29,8 @@ const rows = [
   },
 ] as const;
 
-// Each row: enter(16), holdObjection(18), strike+answer(20), hold(30), exit(~16)
-const PER_ROW = 90;
+// Each row: enter(16), holdObjection(22), strike+answer(20), hold(~56), exit(~16)
+const PER_ROW = 70;
 
 const Row: React.FC<{
   idx: number;
@@ -50,30 +50,30 @@ const Row: React.FC<{
   const x = interpolate(enterS, [0, 1], [80, 0]);
 
   // Strike-through sweep (obj gets crossed out)
-  const strikeT = interpolate(local, [24, 42], [0, 1], {
+  const strikeT = interpolate(local, [20, 34], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Answer slide in
   const ansS = spring({
-    frame: Math.max(0, local - 34),
+    frame: Math.max(0, local - 26),
     fps,
-    config: { damping: 12, stiffness: 150 },
+    config: { damping: 12, stiffness: 170 },
   });
   const ansOpacity = interpolate(ansS, [0, 1], [0, 1]);
   const ansY = interpolate(ansS, [0, 1], [18, 0]);
 
   // Exit slide left
-  const exitT = interpolate(local, [PER_ROW - 16, PER_ROW + 6], [0, 1], {
+  const exitT = interpolate(local, [PER_ROW - 12, PER_ROW + 4], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   const checkS = spring({
-    frame: Math.max(0, local - 38),
+    frame: Math.max(0, local - 28),
     fps,
-    config: { damping: 9, stiffness: 180, mass: 0.9 },
+    config: { damping: 9, stiffness: 200, mass: 0.9 },
   });
   const checkScale = interpolate(checkS, [0, 1], [0, 1], {
     easing: Easing.out(Easing.cubic),

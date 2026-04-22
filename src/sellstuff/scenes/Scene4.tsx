@@ -16,11 +16,12 @@ import { inter } from "../font";
 
 const durationInFrames = 300;
 
-// Step windows (enter, hold, exit in frames)
+// Step windows (enter, hold, exit in frames). Step 3 extended so the
+// "sold" stamp has breathing room before the scene fades.
 const STEPS = [
-  { start: 0, end: 95, label: "Step 1", title: "Snap & post." },
-  { start: 95, end: 195, label: "Step 2", title: "Students see it." },
-  { start: 195, end: 300, label: "Step 3", title: "Meet on campus." },
+  { start: 0, end: 90, label: "Step 1", title: "Snap & post." },
+  { start: 90, end: 180, label: "Step 2", title: "Students see it." },
+  { start: 180, end: 300, label: "Step 3", title: "Meet on campus." },
 ] as const;
 
 const StepText: React.FC<{
@@ -89,18 +90,18 @@ const Step1Visual: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) =
   const start = STEPS[0].start;
   const local = frame - start;
   const panelS = spring({
-    frame: Math.max(0, local - 4),
+    frame: Math.max(0, local - 3),
     fps,
-    config: { damping: 14, stiffness: 130 },
+    config: { damping: 14, stiffness: 150 },
   });
   const panelOpacity = interpolate(panelS, [0, 1], [0, 1]);
   const panelY = interpolate(panelS, [0, 1], [18, 0]);
 
-  // Photo uploads at t=18f
+  // Photo uploads
   const photoS = spring({
-    frame: Math.max(0, local - 18),
+    frame: Math.max(0, local - 15),
     fps,
-    config: { damping: 12, stiffness: 140 },
+    config: { damping: 12, stiffness: 160 },
   });
   const photoScale = interpolate(photoS, [0, 1], [0.6, 1], {
     easing: Easing.out(Easing.cubic),
@@ -109,7 +110,7 @@ const Step1Visual: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) =
 
   // Title/price typed after
   const titleChars = Math.floor(
-    interpolate(local, [40, 56], [0, "Mini fridge".length], {
+    interpolate(local, [36, 54], [0, "Mini fridge".length], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
@@ -122,15 +123,15 @@ const Step1Visual: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) =
   );
 
   // Cursor movement
-  const cursorX = interpolate(local, [0, 20, 40, 60, 80], [780, 460, 300, 380, 560], {
+  const cursorX = interpolate(local, [0, 18, 36, 54, 72], [780, 460, 300, 380, 560], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const cursorY = interpolate(local, [0, 20, 40, 60, 80], [430, 300, 440, 510, 560], {
+  const cursorY = interpolate(local, [0, 18, 36, 54, 72], [430, 300, 440, 510, 560], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const cursorOpacity = interpolate(local, [0, 8, 80, 95], [0, 1, 1, 0], {
+  const cursorOpacity = interpolate(local, [0, 9, 78, 90], [0, 1, 1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -276,7 +277,7 @@ const Step2Visual: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
         top: 48,
         width: 440,
         height: 560,
-        opacity: interpolate(local, [0, 12], [0, 1], { extrapolateRight: "clamp" }) * (1 - outT),
+        opacity: interpolate(local, [0, 16], [0, 1], { extrapolateRight: "clamp" }) * (1 - outT),
         transform: `translateY(${outT * -20}px)`,
       }}
     >
@@ -295,7 +296,7 @@ const Step2Visual: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
         }}
       >
         {items.map((it, i) => {
-          const pop = interpolate(local, [10 + i * 14, 24 + i * 14], [0, 1], {
+          const pop = interpolate(local, [6 + i * 12, 20 + i * 12], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
@@ -349,7 +350,7 @@ const Step2Visual: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
       </div>
 
       {/* "new" ping */}
-      {local > 40 && local < 80 && (
+      {local > 40 && local < 82 && (
         <div
           style={{
             position: "absolute",
@@ -363,7 +364,7 @@ const Step2Visual: React.FC<{ frame: number; fps: number }> = ({ frame }) => {
             fontWeight: 700,
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            transform: `scale(${interpolate(local, [40, 50, 74, 80], [0, 1, 1, 0], {
+            transform: `scale(${interpolate(local, [40, 50, 74, 82], [0, 1, 1, 0], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             })})`,
@@ -383,8 +384,8 @@ const Step3Visual: React.FC<{ frame: number }> = ({ frame }) => {
 
   const chats = [
     { t: "Is this still available?", side: "l", at: 10 },
-    { t: "Yes! Library at 3?", side: "r", at: 30 },
-    { t: "Perfect — see you there 🤝", side: "l", at: 52 },
+    { t: "Yes! Library at 3?", side: "r", at: 28 },
+    { t: "Perfect — see you there 🤝", side: "l", at: 48 },
   ] as const;
 
   return (
@@ -395,7 +396,7 @@ const Step3Visual: React.FC<{ frame: number }> = ({ frame }) => {
         top: 48,
         width: 440,
         height: 560,
-        opacity: interpolate(local, [0, 12], [0, 1], { extrapolateRight: "clamp" }),
+        opacity: interpolate(local, [0, 16], [0, 1], { extrapolateRight: "clamp" }),
       }}
     >
       <div
@@ -454,7 +455,7 @@ const Step3Visual: React.FC<{ frame: number }> = ({ frame }) => {
           }}
         >
           {chats.map((c, i) => {
-            const s = interpolate(local, [c.at, c.at + 10], [0, 1], {
+            const s = interpolate(local, [c.at, c.at + 14], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             });
@@ -484,7 +485,7 @@ const Step3Visual: React.FC<{ frame: number }> = ({ frame }) => {
         </div>
 
         {/* "sold" stamp */}
-        {local > 74 && (
+        {local > 66 && (
           <div
             style={{
               margin: 18,
@@ -499,11 +500,11 @@ const Step3Visual: React.FC<{ frame: number }> = ({ frame }) => {
               display: "flex",
               alignItems: "center",
               gap: 10,
-              opacity: interpolate(local, [74, 88], [0, 1], {
+              opacity: interpolate(local, [66, 82], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
-              transform: `scale(${interpolate(local, [74, 88], [0.94, 1], {
+              transform: `scale(${interpolate(local, [66, 82], [0.94, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               })})`,

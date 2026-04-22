@@ -13,48 +13,73 @@ import { COLORS, LISTING_IMAGES } from "../constants";
 import { SceneFrame } from "../SceneFrame";
 import { inter } from "../font";
 
-const durationInFrames = 150;
-const CUT = 68;
+const durationInFrames = 100;
+const CUT = 50;
+
+// Per-text envelope: fade in, hold, fade out
+const textEnvelope = (frame: number, inRange: [number, number], outRange: [number, number]) => {
+  const fadeIn = interpolate(frame, inRange, [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const fadeOut = interpolate(frame, outRange, [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  return Math.min(fadeIn, fadeOut);
+};
 
 export const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const cutIndex = frame < CUT ? 0 : 1;
-  const local = cutIndex === 0 ? frame : frame - CUT;
-
-  const bg = cutIndex === 0 ? LISTING_IMAGES.bookshelf : LISTING_IMAGES.desk;
-
-  // Punch-in zoom per cut
-  const zoom = interpolate(local, [0, 75], [1.12, 1.22], {
+  // Background crossfade between the two cuts
+  const bgSwap = interpolate(frame, [CUT - 6, CUT + 6], [0, 1], {
+    extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Handheld shake (tiny, frequent)
-  const shakeX = Math.sin(frame / 2.3) * 1.8 + Math.sin(frame / 5) * 1.1;
-  const shakeY = Math.cos(frame / 2.7) * 1.6 + Math.sin(frame / 4) * 0.8;
-
-  // Flash on cut change
-  const flash =
-    cutIndex === 1 && local < 10 ? interpolate(local, [0, 10], [1, 0]) : 0;
-
-  // Text spring per cut
-  const tSpring = spring({
-    frame: local,
-    fps,
-    config: { damping: 10, stiffness: 160, mass: 0.8 },
+  // Gentle punch-in zoom per cut (reset subtly at cut)
+  const cutIndex = frame < CUT ? 0 : 1;
+  const localForZoom = cutIndex === 0 ? frame : frame - CUT;
+  const zoom = interpolate(localForZoom, [0, 50], [1.08, 1.14], {
+    extrapolateRight: "clamp",
   });
-  const tOpacity = interpolate(tSpring, [0, 1], [0, 1]);
-  const tScale = interpolate(tSpring, [0, 1], [0.92, 1], {
+
+  // Very slow drift
+  const shakeX = Math.sin(frame / 26) * 0.6;
+  const shakeY = Math.cos(frame / 30) * 0.5;
+
+  // Softer flash, wider window, centred on the cut
+  const flash = interpolate(frame, [CUT - 3, CUT + 2, CUT + 16], [0, 0.28, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Both texts render simultaneously; crossfade around CUT
+  const t1Opacity = textEnvelope(frame, [2, 16], [CUT - 4, CUT + 6]);
+  const t2Opacity = textEnvelope(frame, [CUT + 2, CUT + 16], [durationInFrames - 8, durationInFrames]);
+
+  // Subtle entrance spring for each text (scale + rise)
+  const t1S = spring({
+    frame,
+    fps,
+    config: { damping: 12, stiffness: 150, mass: 0.9 },
+  });
+  const t1Scale = interpolate(t1S, [0, 1], [0.94, 1], {
     easing: Easing.out(Easing.cubic),
   });
-  const tY = interpolate(tSpring, [0, 1], [18, 0]);
+  const t1Y = interpolate(t1S, [0, 1], [14, 0]);
 
-  const textByCut = [
-    { line1: "Got stuff you", line2: "can't sell?" },
-    { line1: "Selling online", line2: "shouldn't be sketchy." },
-  ];
-  const t = textByCut[cutIndex];
+  const t2S = spring({
+    frame: Math.max(0, frame - (CUT - 4)),
+    fps,
+    config: { damping: 14, stiffness: 140, mass: 0.9 },
+  });
+  const t2Scale = interpolate(t2S, [0, 1], [0.96, 1], {
+    easing: Easing.out(Easing.cubic),
+  });
+  const t2Y = interpolate(t2S, [0, 1], [10, 0]);
 
   return (
     <SceneFrame durationInFrames={durationInFrames}>
@@ -65,14 +90,33 @@ export const Scene1: React.FC = () => {
           overflow: "hidden",
         }}
       >
+        {/* Bookshelf (cut 0) */}
         <AbsoluteFill
           style={{
             transform: `scale(${zoom}) translate(${shakeX}px, ${shakeY}px)`,
-            opacity: 0.42,
+            opacity: 0.42 * (1 - bgSwap),
           }}
         >
           <Img
-            src={staticFile(bg)}
+            src={staticFile(LISTING_IMAGES.bookshelf)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "saturate(0.8) contrast(1.02)",
+            }}
+          />
+        </AbsoluteFill>
+
+        {/* Desk (cut 1) */}
+        <AbsoluteFill
+          style={{
+            transform: `scale(${zoom}) translate(${shakeX}px, ${shakeY}px)`,
+            opacity: 0.42 * bgSwap,
+          }}
+        >
+          <Img
+            src={staticFile(LISTING_IMAGES.desk)}
             style={{
               width: "100%",
               height: "100%",
@@ -91,7 +135,7 @@ export const Scene1: React.FC = () => {
 
         {flash > 0 && (
           <AbsoluteFill
-            style={{ background: "#ffffff", opacity: flash * 0.85 }}
+            style={{ background: "#ffffff", opacity: flash }}
           />
         )}
 
@@ -103,20 +147,40 @@ export const Scene1: React.FC = () => {
             padding: 56,
           }}
         >
+          {/* Text 1 */}
           <div
             style={{
+              position: "absolute",
               textAlign: "center",
               fontWeight: 900,
               letterSpacing: "-0.055em",
               color: COLORS.text,
               lineHeight: 0.98,
               fontSize: 108,
-              opacity: tOpacity,
-              transform: `translateY(${tY}px) scale(${tScale})`,
+              opacity: t1Opacity,
+              transform: `translateY(${t1Y}px) scale(${t1Scale})`,
             }}
           >
-            <div>{t.line1}</div>
-            <div>{t.line2}</div>
+            <div>Got stuff you</div>
+            <div>can&apos;t sell?</div>
+          </div>
+
+          {/* Text 2 */}
+          <div
+            style={{
+              position: "absolute",
+              textAlign: "center",
+              fontWeight: 900,
+              letterSpacing: "-0.055em",
+              color: COLORS.text,
+              lineHeight: 0.98,
+              fontSize: 108,
+              opacity: t2Opacity,
+              transform: `translateY(${t2Y}px) scale(${t2Scale})`,
+            }}
+          >
+            <div>Selling online</div>
+            <div>shouldn&apos;t be sketchy.</div>
           </div>
         </AbsoluteFill>
       </AbsoluteFill>

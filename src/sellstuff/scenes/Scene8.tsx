@@ -13,7 +13,7 @@ import { SceneFrame } from "../SceneFrame";
 import { Cursor, LogoImage } from "../ui";
 import { inter } from "../font";
 
-const durationInFrames = 300;
+const durationInFrames = 160;
 
 export const Scene8: React.FC = () => {
   const frame = useCurrentFrame();
@@ -33,77 +33,77 @@ export const Scene8: React.FC = () => {
 
   // Sub
   const subS = spring({
-    frame: Math.max(0, frame - 18),
+    frame: Math.max(0, frame - 8),
     fps,
-    config: { damping: 16, stiffness: 150 },
+    config: { damping: 16, stiffness: 170 },
   });
   const subOpacity = interpolate(subS, [0, 1], [0, 1]);
   const subY = interpolate(subS, [0, 1], [10, 0]);
 
   // Button (pill) reveal
   const btnS = spring({
-    frame: Math.max(0, frame - 36),
+    frame: Math.max(0, frame - 16),
     fps,
-    config: { damping: 12, stiffness: 150 },
+    config: { damping: 12, stiffness: 170 },
   });
   const btnOpacity = interpolate(btnS, [0, 1], [0, 1]);
   const btnY = interpolate(btnS, [0, 1], [12, 0]);
 
   // Cursor choreography: enters from bottom-right, moves to button, clicks, ripples
-  const cursorAppear = interpolate(frame, [60, 74], [0, 1], {
+  const cursorAppear = interpolate(frame, [26, 34], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Cursor travels from (720, 560) to the button at ~(540, 430)
-  const cursorX = interpolate(frame, [74, 120], [720, 540], {
+  const cursorX = interpolate(frame, [34, 58], [720, 540], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.inOut(Easing.cubic),
   });
-  const cursorY = interpolate(frame, [74, 120], [560, 430], {
+  const cursorY = interpolate(frame, [34, 58], [560, 430], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.inOut(Easing.cubic),
   });
 
-  // Click at frame ~124
-  const clickT = interpolate(frame, [122, 128], [0, 1], {
+  // Click at frame ~60
+  const clickT = interpolate(frame, [60, 64], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const cursorScale = interpolate(frame, [118, 124, 130], [1, 0.82, 1], {
+  const cursorScale = interpolate(frame, [58, 60, 66], [1, 0.82, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Button press scale
-  const btnPress = interpolate(frame, [120, 126, 138], [1, 0.96, 1], {
+  const btnPress = interpolate(frame, [58, 62, 70], [1, 0.96, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Ripple
-  const rippleScale = interpolate(frame, [124, 160], [0.5, 2.6], {
+  const rippleScale = interpolate(frame, [60, 86], [0.5, 2.6], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.out(Easing.cubic),
   });
-  const rippleOpacity = interpolate(frame, [124, 160], [0.45, 0], {
+  const rippleOpacity = interpolate(frame, [60, 86], [0.45, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Cursor fades away after click
   const cursorOpacity =
-    cursorAppear * interpolate(frame, [155, 175], [1, 0], {
+    cursorAppear * interpolate(frame, [74, 84], [1, 0], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     });
 
   // Finale swap — headline/sub fade out, big logo fades in
-  const finaleStart = 180;
-  const finaleT = interpolate(frame, [finaleStart, finaleStart + 30], [0, 1], {
+  const finaleStart = 78;
+  const finaleT = interpolate(frame, [finaleStart, finaleStart + 16], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -119,7 +119,7 @@ export const Scene8: React.FC = () => {
   });
 
   // Final domain reveal
-  const domainT = interpolate(frame, [finaleStart + 30, finaleStart + 60], [0, 1], {
+  const domainT = interpolate(frame, [finaleStart + 16, finaleStart + 30], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -129,7 +129,7 @@ export const Scene8: React.FC = () => {
 
   // Pulse urgency on button before click
   const btnPulse =
-    1 + Math.sin(frame / 8) * 0.012 * interpolate(frame, [36, 120], [1, 0], {
+    1 + Math.sin(frame / 8) * 0.012 * interpolate(frame, [16, 58], [1, 0], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     });

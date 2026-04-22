@@ -16,10 +16,12 @@ const durationInFrames = 150;
 
 type Msg = { text: string; side: "l" | "r"; tag: string };
 
+const STRANGER = "stranger_412";
+
 const messages: Msg[] = [
-  { text: "yo u still got the fridge??", side: "l", tag: "stranger_412" },
-  { text: "can u ship it to LA 👀", side: "r", tag: "unknown number" },
-  { text: "trade for crypto?", side: "l", tag: "not_a_scam_bot" },
+  { text: "yo u still got the fridge??", side: "l", tag: STRANGER },
+  { text: "can u ship it to LA 👀", side: "r", tag: STRANGER },
+  { text: "send me $20 first to hold it", side: "l", tag: STRANGER },
 ];
 
 const Bubble: React.FC<{
@@ -97,7 +99,7 @@ export const Scene2: React.FC = () => {
   const labelY = interpolate(label, [0, 1], [-6, 0]);
 
   // Final "not anymore." slam
-  const slamStart = 118;
+  const slamStart = 88;
   const slam = spring({
     frame: Math.max(0, frame - slamStart),
     fps,
@@ -142,7 +144,7 @@ export const Scene2: React.FC = () => {
           </div>
 
           {messages.map((m, i) => (
-            <Bubble key={i} msg={m} startFrame={8 + i * 26} frame={frame} fps={fps} />
+            <Bubble key={i} msg={m} startFrame={4 + i * 26} frame={frame} fps={fps} />
           ))}
         </AbsoluteFill>
 
